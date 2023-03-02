@@ -8,7 +8,7 @@ import shutil
 import random
 import string
 
-
+# Function to create or recreate folder "Images" and file "DB.txt"
 def refresh_os():
     with open('DB.txt', 'wb'):
         pass
@@ -20,7 +20,7 @@ def refresh_os():
         shutil.rmtree(path)
         os.mkdir(images_path)
 
-
+# The function of adding records from the pharmacy "Аптека от склада" to the database
 def apteka_ot_sklada():
     length_range = 1450
     first_number = 0
@@ -30,6 +30,7 @@ def apteka_ot_sklada():
             temporary_storage_img = []
             temporary_storage_name = []
             temporary_storage_price = []
+            # Setting a link
             url = "https://apteka-ot-sklada.ru/catalog/medikamenty-i-bady?start="
             if first_number == 0:
                 url = url + str(first_number) + "&sort=name"
@@ -44,6 +45,7 @@ def apteka_ot_sklada():
             page = requests.get(url)
             soup = BeautifulSoup(page.text, "html.parser")
             query_result = soup.findAll('img', class_='goods-photo goods-card__image')
+            # Downloading a picture and adding img title to list
             for data in query_result:
                 value = data.get('src')
                 value = value[len(value)::-1]
@@ -53,6 +55,7 @@ def apteka_ot_sklada():
                 request_site = Request(pass_url, headers={"User-Agent": "Mozilla/5.0"})
                 download_img = urllib.request.urlopen(request_site).read()
                 letters = string.ascii_lowercase
+                # Adding a random value to the img name
                 rand_string = ''.join(random.choice(letters) for j in range(8))
                 value = rand_string + value
                 path_images = open("Images/{}".format(value), 'wb')
@@ -60,20 +63,25 @@ def apteka_ot_sklada():
                 path_images.close()
                 temporary_storage_img.append(value)
             query_result = soup.findAll('a', class_='goods-card__link')
+            # Adding name to list
             for data in query_result:
                 value = data.getText()
                 temporary_storage_name.append(value)
             query_result = soup.findAll('span', class_='goods-card__cost text text_size_title text_weight_bold')
+            # Adding price to list
             for data in query_result:
                 value = data.getText()
+                # Adding only numbers
                 string_line = ""
                 for j in value:
                     if '0' <= j <= '9' or j == ".":
                         string_line = string_line + j
                 value = "от " + string_line + " руб."
                 temporary_storage_price.append(value)
+            # Connection all lists
             query_result = [list(a) for a in
                             zip(temporary_storage_img, temporary_storage_name, temporary_storage_price)]
+            # Writing to a text file
             f = open('DB.txt', 'a')
             for j in range(len(query_result)):
                 query_result[j].append("Аптека от склада")
@@ -82,7 +90,7 @@ def apteka_ot_sklada():
         except:
             print("[INFO] Error Update Apteka_ot_Sklada")
 
-
+# The function of adding records from the pharmacy "Фармакопейка" to the database
 def farmakopeika():
     length_range = 570
     for i in range(1, length_range):
@@ -139,7 +147,7 @@ def farmakopeika():
         except:
             print("[INFO] Error Update Farmakopeika")
 
-
+# The function of adding records from the pharmacy "Семейная аптека" to the database
 def family_apteka():
     try:
         temporary_storage_img = []
@@ -174,10 +182,11 @@ def family_apteka():
     except:
         print("[INFO] Error Update Family_Apteka")
 
-
+# Database update
 def update_db():
     print("[INFO] Start update!")
     refresh_os()
+    # Separate threads of execution, to speed up the program
     x = threading.Thread(target=apteka_ot_sklada)
     y = threading.Thread(target=farmakopeika)
     z = threading.Thread(target=family_apteka)
