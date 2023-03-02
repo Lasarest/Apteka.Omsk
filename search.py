@@ -1,3 +1,4 @@
+# Searching element from database "DB.txt"
 def search_in_file(text_form_user):
     sorted_db = []
     count = 0
@@ -10,6 +11,7 @@ def search_in_file(text_form_user):
             if search_response != -1:
                 sorted_db.append(line)
                 count = count + 1
+            # Limiting the number of search records
             if count == 20:
                 break
         return sorted_db, count
